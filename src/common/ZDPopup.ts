@@ -255,13 +255,27 @@ export class ZDPopup extends Popup {
       .then((result) => {
         // TODO move result parsing to WikiConnector and add typing
         const content = result.parse && result.parse.text["*"];
-        if (content && !(<string>content).includes("redirectMsg")) {
-          return content;
+        if ((<string>content)!=("")) {
+          if (content && !(<string>content).includes("redirectMsg")) {
+            return content;
+          } else {
+            // fall back to subpage
+            fullPageTitle = subpage
+              ? `${pageTitle}/Map/${subpage}`
+              : `${pageTitle}/Map`;
+            return (
+              this.myOptions.wiki
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                .query<any>(
+                  `action=parse&page=${encodeURIComponent(fullPageTitle)}`
+                )
+                .then((result) => {
+                  return (result.parse && result.parse.text["*"]) || "";
+                })
+            );
+          }
         } else {
-          // fall back to subpage
-          fullPageTitle = subpage
-            ? `${pageTitle}/Map/${subpage}`
-            : `${pageTitle}/Map`;
+          fullPageTitle = pageTitle
           return (
             this.myOptions.wiki
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
